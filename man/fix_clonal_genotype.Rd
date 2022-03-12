@@ -4,7 +4,7 @@
 \alias{fix_clonal_genotype}
 \title{Manage Clonal genotype in data}
 \usage{
-fix_clonal_genotype(samples, freqs, labels)
+fix_clonal_genotype(samples, freqs, labels, matching_samples)
 }
 \arguments{
 \item{samples}{input dataset (mutational matrix) as matrix}
@@ -12,6 +12,8 @@ fix_clonal_genotype(samples, freqs, labels)
 \item{freqs}{genotype frequencies (in the rows' order)}
 
 \item{labels}{list of gene names (in the columns' order)}
+
+\item{matching_samples}{list of sample names matching each genotype}
 }
 \value{
 a named list containing the fixed "samples", "freqs" and "labels"
@@ -34,15 +36,14 @@ freqs <- compactedDataset$counts/sum(compactedDataset$counts)
 
 # prepare node labels listing the mutated genes for each node
 labels <- prepare_labels(samples, genes)
+if( is.null(compactedDataset$row_names) ){
+  compactedDataset$row_names <- rownames(compactedDataset$matrix)
+}
+matching_samples <- compactedDataset$row_names
+# matching_samples
+matching_samples 
 
 # fix Colonal genotype absence, if needed
-fix <- fix_clonal_genotype(samples, freqs, labels)
-
-samples <- fix[["samples"]]
-freqs <- fix[["freqs"]]
-labels <- fix[["labels"]]
-
-list("samples" = samples, "freqs" = freqs,
-    "labels" = labels, "genes" = genes)
+fix <- fix_clonal_genotype(samples, freqs, labels, matching_samples)
 
 }

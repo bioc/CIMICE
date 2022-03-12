@@ -240,6 +240,7 @@ prepare_labels <- function(samples, genes){
 #' @param samples input dataset (mutational matrix) as matrix
 #' @param freqs genotype frequencies (in the rows' order)
 #' @param labels list of gene names (in the columns' order)
+#' @param matching_samples list of sample names matching each genotype
 #'
 #' @return a named list containing the fixed "samples", "freqs" and "labels"
 #'
@@ -258,29 +259,32 @@ prepare_labels <- function(samples, genes){
 #' 
 #' # prepare node labels listing the mutated genes for each node
 #' labels <- prepare_labels(samples, genes)
-#' 
+#' if( is.null(compactedDataset$row_names) ){
+#'   compactedDataset$row_names <- rownames(compactedDataset$matrix)
+#' }
+#' matching_samples <- compactedDataset$row_names
+#' # matching_samples
+#' matching_samples 
+#'
 #' # fix Colonal genotype absence, if needed
-#' fix <- fix_clonal_genotype(samples, freqs, labels)
-#' 
-#' samples <- fix[["samples"]]
-#' freqs <- fix[["freqs"]]
-#' labels <- fix[["labels"]]
-#' 
-#' list("samples" = samples, "freqs" = freqs,
-#'     "labels" = labels, "genes" = genes)
+#' fix <- fix_clonal_genotype(samples, freqs, labels, matching_samples)
 #'
 #' @export fix_clonal_genotype
-fix_clonal_genotype <- function(samples, freqs, labels){
+fix_clonal_genotype <- function(samples, freqs, labels, matching_samples){
     # if no clonal genotype is found
     if (!(0 %in% rowSums(samples))){
         # add a 0 frequency genotype without mutations to the mutational matrix
-        samples = rbind(samples, map_dbl(seq(1,ncol(samples)), function(x) 0) )
-        freqs = c(freqs,0)
+        samples <- rbind(samples, map_dbl(seq(1,ncol(samples)), function(x) 0) )
+        rownames(samples)[nrow(samples)] <- "Clonal" 
+        freqs <- c(freqs,0)
         # update labels
-        labels = c(labels,"Clonal")
+        labels <- c(labels,"Clonal")
+        matching_samples <- c(matching_samples, "Clonal")
     }
-    list("labels" = labels, "samples" = samples, "freqs"=freqs)
+    list("labels" = labels, "samples" = samples, "freqs"=freqs, "matching_samples"=matching_samples)
 }
+
+
 
 #' Remove transitive edges and prepare graph
 #'
@@ -304,17 +308,71 @@ fix_clonal_genotype <- function(samples, freqs, labels){
 #'
 #' @export build_subset_graph
 build_subset_graph <- function(edges, labels){
+    
+    # {OLDER CODE, use if transitive reduction gets fixed}
     # prepare the actual graph
-    g = graph_from_edgelist(t(simplify2array(edges)))
+    #g <- graph_from_edgelist(t(simplify2array(edges)))
     # remove transitive edges using transitive.reduction from the "nem" package
     # g = graph_from_adjacency_matrix(transitive.reduction(as.matrix(as_adj(g))))
     # altenative approach with "relations" package
-    E <- transitive_reduction(
-        endorelation(graph = as.list(data.frame(t(as_edgelist(g))))))
-    g <- graph_from_adjacency_matrix(E$.Data$incidence)
+    #E <- transitive_reduction(
+    #    endorelation(graph = as.list(data.frame(t(as_edgelist(g))))))
+    #g <- graph_from_adjacency_matrix(E$.Data$incidence)
     # add labels to node
+    #V(g)$label <- labels
+    #g
+    g <- edges %>% remove_transitive_edges %>% graph_from_edgelist
     V(g)$label <- labels
     g
+}
+
+#' Remove transitive edges from an edgelist
+#'
+#' Remove transitive edges from an edgelist. This procedure is temporary to
+#' cover a bug in 'relations' package.
+#'
+#' @param E edge list, built from "build_topology_subset"
+#'
+#' @return a new edgelist without transitive edges (as a N*2 matrix)
+#'
+#' @examples
+#' l <- list(c(1,2),c(2,3), c(1,3))
+#' remove_transitive_edges(l)
+#'
+#' @export remove_transitive_edges
+remove_transitive_edges <- function(E){
+  
+  discarded <- rep(0, times=length(E))
+  stop <- FALSE # stop at first counterexample
+  
+  # for each edge A -> B seek a pair <A -> C, C -> B>
+  for(i in seq(1,length(E))){
+    for(e1 in E){
+      for(e2 in E){
+        if(e1[2] == e2[1] && E[[i]][1] == e1[1] && E[[i]][2] == e2[2]){
+          discarded[i] <- 1
+          stop <- TRUE
+          break
+        }
+      }
+      if(stop){
+        stop <- FALSE
+        break
+      }
+    }
+  }
+  
+  # prepare output with non discarded edges
+  out <- matrix(rep(0,times=2*length(which(discarded == 0))), ncol=2)
+  j <- 1
+  for(i in seq(1,length(E))){
+    if(discarded[i] == 0){
+      out[j,1] <- E[[i]][1]
+      out[j,2] <- E[[i]][2]
+      j <- j + 1 
+    }
+  }
+  out
 }
 
 #' Get number of children

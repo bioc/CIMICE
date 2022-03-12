@@ -32,11 +32,12 @@ Imports:
     ggraph, 
     stats,
     utils,
-    relations,
     maftools,
     assertthat,
+    tidygraph,
+    expm,
     Matrix
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 Suggests: 
     BiocStyle,

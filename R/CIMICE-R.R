@@ -16,7 +16,8 @@
 #' @docType package
 #' @name CIMICE
 #'
-#' @importFrom dplyr select enexprs select_if %>% ungroup summarise group_by_all n mutate_all
+#' @importFrom dplyr select enexprs select_if %>% ungroup summarise group_by_all n mutate_all count group_by 
+#' @importFrom dplyr inner_join left_join mutate pull
 #' @importFrom ggplot2 ggplot geom_histogram aes arrow unit labs
 #' @importFrom glue glue
 #' @importFrom tidyr drop_na
@@ -26,14 +27,15 @@
 #' @importFrom networkD3 igraph_to_networkD3 forceNetwork
 #' @importFrom visNetwork toVisNetworkData visNetwork visHierarchicalLayout
 #' @importFrom ggcorrplot ggcorrplot
-#' @importFrom purrr map2 map_dbl imap_chr map map_chr map_int map2_chr
-#' @importFrom ggraph ggraph geom_node_point geom_node_label
+#' @importFrom purrr map2 map_dbl imap_chr map map_chr map_int map2_chr rbernoulli
+#' @importFrom ggraph ggraph geom_node_point geom_node_label geom_edge_loop
 #' @importFrom ggraph geom_edge_link label_rect
 #' @importFrom stats cor
 #' @importFrom utils read.csv
-#' @importFrom relations transitive_reduction endorelation
 #' @importFrom maftools read.maf mutCountMatrix
-#' @importFrom assertthat are_equal
+#' @importFrom assertthat are_equal assert_that
+#' @importFrom tidygraph %E>% %N>% activate as_tbl_graph bind_edges
+#' @importFrom expm %^%
 #' @import Matrix
 #'
 NULL

@@ -78,7 +78,7 @@ library(tidyr)
 # Graph data management
 library(igraph)
 # Remove transitive edges on a graph
-library(relations)
+# library(relations)
 # Interactive graph visualization
 library(networkD3)
 # Interactive graph visualization
@@ -308,11 +308,16 @@ Add "Clonal" genotype to the dataset (if not present) that will be used as DAG r
 ```{r}
 # prepare node labels listing the mutated genes for each node
 labels <- prepare_labels(samples, genes)
+if( is.null(compactedDataset$row_names) ){
+    compactedDataset$row_names <- rownames(compactedDataset$matrix)
+}
+matching_samples <- compactedDataset$row_names
 # fix Colonal genotype absence, if needed
-fix <- fix_clonal_genotype(samples, freqs, labels)
+fix <- fix_clonal_genotype(samples, freqs, labels, matching_samples)
 samples = fix[["samples"]]
 freqs = fix[["freqs"]]
 labels = fix[["labels"]]
+matching_samples <- fix[["matching_samples"]]
 ```
 ```{r,echo=F}
 samples
@@ -456,39 +461,10 @@ cat(to_dot(quick_run(example_dataset())))
 
 This vignette was prepared using a R session with the following specifications:
 
+```{r}
+sessionInfo()
 ```
-R version 4.0.4 (2021-02-15)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 20.04.1 LTS
 
-Matrix products: default
-BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
-LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
-
-locale:
-[1] LC_CTYPE=it_IT.UTF-8       LC_NUMERIC=C               LC_TIME=it_IT.UTF-8        LC_COLLATE=it_IT.UTF-8    
-[5] LC_MONETARY=it_IT.UTF-8    LC_MESSAGES=it_IT.UTF-8    LC_PAPER=it_IT.UTF-8       LC_NAME=C                 
-[9] LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=it_IT.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
-[1] ggraph_2.0.4     purrr_0.3.4      ggcorrplot_0.1.3 visNetwork_2.0.9 networkD3_0.4    relations_0.6-9  igraph_1.2.6    
-[8] tidyr_1.1.2      glue_1.4.2       ggplot2_3.3.3    dplyr_1.0.5      BiocStyle_2.18.1 CIMICE_0.99.2    maftools_2.6.05 
-[15] Matrix_1.3-2    
-
-loaded via a namespace (and not attached):
-[1] tidyselect_1.1.0    xfun_0.19           slam_0.1-47         sets_1.0-18         graphlayouts_0.7.1  splines_4.0.4      
-[7] lattice_0.20-41     colorspace_2.0-0    vctrs_0.3.5         generics_0.1.0      htmltools_0.5.1.1   viridisLite_0.3.0  
-[13] yaml_2.2.1          survival_3.2-7      rlang_0.4.10        pillar_1.4.7        withr_2.3.0         DBI_1.1.1          
-[19] tweenr_1.0.1        RColorBrewer_1.1-2  lifecycle_1.0.0     munsell_0.5.0       gtable_0.3.0        htmlwidgets_1.5.2  
-[25] evaluate_0.14       knitr_1.30          tidygraph_1.2.0     Rcpp_1.0.5          BiocManager_1.30.10 scales_1.1.1       
-[31] jsonlite_1.7.1      farver_2.0.3        gridExtra_2.3       ggforce_0.3.2       digest_0.6.27       ggrepel_0.8.2      
-[37] polyclip_1.10-0     grid_4.0.4          tools_4.0.4         magrittr_2.0.1      tibble_3.0.4        cluster_2.1.0      
-[43] crayon_1.3.4        pkgconfig_2.0.3     ellipsis_0.3.1      MASS_7.3-53         data.table_1.14.0   rmarkdown_2.5      
-[49] assertthat_0.2.1    rstudioapi_0.13     viridis_0.5.1       R6_2.5.0            compiler_4.0.4    
-```
 
 ```{r, echo=FALSE}
 # run ALL

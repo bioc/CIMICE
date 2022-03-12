@@ -108,16 +108,13 @@ format_labels <- function(labels, max_col = 3, max_row = 3){
 #' @export make_labels
 make_labels <- function(out, mode = "samplesIDs", max_col = 3, max_row = 3){
     if(mode == "samplesIDs"){
-        if(length(out$matching_samples) != length(out$labels)){
-            out$matching_samples[[length(out$matching_samples)+1]] <- "Clonal" 
-        }
         labels <- out$matching_samples %>% as.character %>% format_labels(max_col, max_row)
     }else if(mode == "sequentialIDs"){
         labels <- map_chr(seq(1,length(out$labels)), ~ as.character(.)) 
     }else if(mode == "geneIDs"){
         labels <- out$labels %>% as.character %>% format_labels(max_col, max_row)
     }else{
-        stop(paste("Invalid output mode:", mode))
+        stop("Invalid output mode:", mode)
     }
     labels
 }
@@ -227,7 +224,7 @@ draw_networkD3 <- function(out, ...){
 #         arrows = "to",
 #         shadow = TRUE,
 #         label = signif(gr$links$value, digits = 4),
-#         title = paste0("<font color=\"black\"><p>Edge:<br> from:",
+#         title = paste0("<font color=\"black\"><p>Edge:<br> from: ",
 #                     gr$nodes$label[gr$links$source+1] ,"<br>to : ",
 #                     gr$nodes$label[gr$links$target+1] ,
 #                     "<br>New mutations:<br>",
@@ -297,7 +294,7 @@ draw_visNetwork <- function(out, ...){
     
     grp <- toVisNetworkData(g, idToLabel = TRUE)
     
-    visNetwork(nodes, edges) %>% visHierarchicalLayout(sortMethod="directed")
+    visNetwork(nodes, edges) # %>% visHierarchicalLayout(sortMethod="directed")
 }
 
 

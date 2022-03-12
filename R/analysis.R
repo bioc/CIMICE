@@ -107,17 +107,20 @@ dataset_preprocessing_population <- function(compactedDataset){
     freqs <- compactedDataset$counts/sum(compactedDataset$counts)
     # prepare node labels listing the mutated genes for each node
     labels <- prepare_labels(samples, genes)
-    # fix Colonal genotype absence, if needed
-    fix <- fix_clonal_genotype(samples, freqs, labels)
-    samples <- fix[["samples"]]
-    freqs <- fix[["freqs"]]
-    labels <- fix[["labels"]]
-    # return a list with the prepared dataset and its additional information
+    # prepare node labels displaying genotype names
     if( is.null(compactedDataset$row_names) ){
         compactedDataset$row_names <- rownames(compactedDataset$matrix)
     }
+    matching_samples <- compactedDataset$row_names
+    # fix Colonal genotype absence, if needed
+    fix <- fix_clonal_genotype(samples, freqs, labels, matching_samples)
+    samples <- fix[["samples"]]
+    freqs <- fix[["freqs"]]
+    labels <- fix[["labels"]]
+    matching_samples <- fix[["matching_samples"]]
+    # return a list with the prepared dataset and its additional information
     list("samples" = samples, "freqs" = freqs,
-        "labels" = labels, "genes" = genes, "matching_samples" = compactedDataset$row_names)
+        "labels" = labels, "genes" = genes, "matching_samples" = matching_samples)
 }
 
 #' Default preparation of graph topology
@@ -205,7 +208,7 @@ quick_run <- function(dataset, mode="CAPRI"){
     }else if(mode == "CAPRIpop"){
         preproc <- dataset_preprocessing_population(dataset)
     }else{
-        stop(paste("Unsupported input mode", mode, "use CAPRI o CAPRIpop"))
+        stop("Unsupported input mode", mode, "use CAPRI o CAPRIpop")
     }
     samples <- preproc[["samples"]]
     freqs   <- preproc[["freqs"]]
@@ -216,3 +219,6 @@ quick_run <- function(dataset, mode="CAPRI"){
     W <- compute_weights_default(g, freqs)
     list(topology = g, weights = W, labels = labels, freqs=freqs, matching_samples=matching_samples)
 }
+
+
+
